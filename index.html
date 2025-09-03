@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clebsch-Gordan Coefficients Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* bg-gray-900 */
+        }
+        /* For Firefox */
+        input[type='number'] {
+            -moz-appearance: textfield;
+        }
+        /* For Chrome, Safari, Edge, Opera */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .result-box {
+            transition: all 0.3s ease-in-out;
+        }
+        /* CSS for rendering fractions */
+        .frac-container {
+            font-size: 1.5rem; /* text-2xl */
+            line-height: 2rem;
+            font-weight: 700;
+            color: #67e8f9; /* cyan-300 */
+            display: inline-flex;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 0.25rem;
+        }
+        .frac {
+            display: inline-block;
+            position: relative;
+            vertical-align: middle;
+            letter-spacing: 0.001em;
+            text-align: center;
+        }
+        .frac > sup, .frac > sub {
+            display: block;
+            font-size: 0.75em;
+            line-height: 1.4;
+        }
+        .frac > sup {
+            border-bottom: 2px solid #a5f3fc; /* lighter cyan */
+            padding-bottom: 0.1em;
+        }
+        .frac > span {
+            display: none;
+        }
+        .frac-sign {
+            font-size: 2rem;
+            display: inline-block;
+            margin-right: 0.25rem;
+        }
+    </style>
+</head>
+<body class="text-gray-200 flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-cyan-400">Clebsch-Gordan Coefficients</h1>
+            <p class="mt-2 text-lg text-gray-400">A web sophisticated tool for calculating the coefficients of angular momentum coupling in Quantum Mechanics.</p>
+        </header>
+
+        <main class="bg-gray-800 shadow-2xl rounded-2xl p-6 md:p-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Input Column 1 -->
+                <div class="flex flex-col gap-4 p-4 bg-gray-900/50 rounded-lg">
+                    <h3 class="text-lg font-semibold text-center text-rose-400 border-b border-gray-700 pb-2">State 1: |j₁, m₁⟩</h3>
+                    <div>
+                        <label for="j1" class="block mb-2 text-sm font-medium">j₁ (Total Angular Momentum)</label>
+                        <input type="text" id="j1" class="bg-gray-700 border border-gray-600 text-gray-200 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5" placeholder="e.g., 1/2 or 1" required>
+                    </div>
+                    <div>
+                        <label for="m1" class="block mb-2 text-sm font-medium">m₁ (Projection)</label>
+                        <input type="text" id="m1" class="bg-gray-700 border border-gray-600 text-gray-200 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5" placeholder="e.g., 1/2 or -1" required>
+                    </div>
+                </div>
+                <!-- Input Column 2 -->
+                <div class="flex flex-col gap-4 p-4 bg-gray-900/50 rounded-lg">
+                    <h3 class="text-lg font-semibold text-center text-lime-400 border-b border-gray-700 pb-2">State 2: |j₂, m₂⟩</h3>
+                    <div>
+                        <label for="j2" class="block mb-2 text-sm font-medium">j₂ (Total Angular Momentum)</label>
+                        <input type="text" id="j2" class="bg-gray-700 border border-gray-600 text-gray-200 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5" placeholder="e.g., 1/2 or 2" required>
+                    </div>
+                    <div>
+                        <label for="m2" class="block mb-2 text-sm font-medium">m₂ (Projection)</label>
+                        <input type="text" id="m2" class="bg-gray-700 border border-gray-600 text-gray-200 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5" placeholder="e.g., -1/2 or 0" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center">
+                <button id="calculateBtn" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-8 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-cyan-800">
+                    Calculate Coefficients
+                </button>
+            </div>
+
+            <div id="result" class="result-box mt-8 p-6 bg-gray-900 rounded-lg text-center min-h-[100px] flex items-center justify-center">
+                <span class="text-gray-500">Results will be displayed here</span>
+            </div>
+        </main>
+        
+        <section class="mt-10 p-6 bg-gray-800/50 rounded-xl">
+            <h2 class="text-2xl font-bold text-cyan-400 mb-4">About Clebsch-Gordan Coefficients</h2>
+            <p class="text-gray-400 mb-4">
+                In quantum mechanics, Clebsch-Gordan (CG) coefficients are numbers that arise when coupling angular momenta. When two quantum systems with angular momenta <span class="font-mono text-rose-400">j₁</span> and <span class="font-mono text-lime-400">j₂</span> are combined, the total angular momentum <span class="font-mono text-amber-400">J</span> of the combined system is quantized. The CG coefficients give the probability amplitude for finding the system in a state <span class="font-mono text-gray-300">|J, M⟩</span>, given it was formed from states <span class="font-mono text-gray-300">|j₁, m₁⟩</span> and <span class="font-mono text-gray-300">|j₂, m₂⟩</span>.
+            </p>
+            <h3 class="text-xl font-semibold text-cyan-500 mt-6 mb-3">Selection Rules</h3>
+            <p class="text-gray-400 mb-4">For the coefficient to be non-zero, the following conditions (selection rules) must be met:</p>
+            <ul class="list-disc list-inside space-y-2 text-gray-300 bg-gray-900/50 p-4 rounded-lg">
+                <li><span class="font-mono">m₁ + m₂ = M</span></li>
+                <li><span class="font-mono">|j₁ - j₂| ≤ J ≤ j₁ + j₂</span> (Triangle inequality)</li>
+                <li><span class="font-mono">|m₁| ≤ j₁</span>, <span class="font-mono">|m₂| ≤ j₂</span>, <span class="font-mono">|M| ≤ J</span></li>
+                <li>All <span class="font-mono">j₁, m₁, j₂, m₂, J, M</span> must be integers or half-integers.</li>
+                <li><span class="font-mono">j₁ + j₂ + J</span> must be an integer.</li>
+            </ul>
+        </section>
+
+        <section class="mt-10 p-6 bg-gray-800/50 rounded-xl">
+            <h2 class="text-2xl font-bold text-cyan-400 mb-4">About this Tool</h2>
+            <p class="text-gray-400 mb-4">
+                This calculator provides a user-friendly interface to compute Clebsch-Gordan coefficients for the coupling of two angular momenta. Simply input the quantum numbers for the two initial states (<span class="font-mono text-rose-400">|j₁, m₁⟩</span> and <span class="font-mono text-lime-400">|j₂, m₂⟩</span>), and the tool will automatically determine all possible coupled states and their corresponding coefficients.This website was created using Gemini AI.
+            </p>
+            <p class="text-gray-400">
+                The calculation is based on Racah's formula and implemented using log-factorials to ensure high numerical accuracy, even for larger quantum numbers. Results are displayed in their exact symbolic form (fractions and square roots) to align with standard academic notation, providing a more precise alternative to decimal approximations.
+            </p>
+        </section>
+        
+        <div class="mt-10 text-center">
+            <img src="https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071&auto=format&fit=crop"
+                 onerror="this.onerror=null;this.src='https://placehold.co/800x400/111827/67e8f9?text=Quantum+Mechanics';"
+                 alt="Abstract representation of quantum mechanics"
+                 class="rounded-xl mx-auto shadow-lg w-full max-w-2xl">
+            
+        </div>
+
+        <footer class="text-center mt-12 mb-4 p-4 text-gray-500 text-sm">
+            <p>&copy; 2025 Irfan. All Rights Reserved.</p>
+        </footer>
+
+    </div>
+
+<script>
+    // --- Helper Functions ---
+    const calculateBtn = document.getElementById('calculateBtn');
+    const resultDiv = document.getElementById('result');
+
+    function parseInput(input) {
+        if (typeof input !== 'string') return input;
+        input = input.trim();
+        if (input.includes('/')) {
+            const parts = input.split('/');
+            if (parts.length === 2) {
+                const num = parseFloat(parts[0]);
+                const den = parseFloat(parts[1]);
+                if (!isNaN(num) && !isNaN(den) && den !== 0) return num / den;
+            }
+        }
+        return parseFloat(input);
+    }
+
+    const logFactorialCache = {};
+    function logFactorial(n) {
+        if (n < 0 || n !== Math.floor(n)) return -Infinity; // log(0)
+        if (n === 0 || n === 1) return 0;
+        if (n in logFactorialCache) return logFactorialCache[n];
+        if (n > 170) { // For larger n, use Stirling's approximation for log(n!)
+             return n * Math.log(n) - n + 0.5 * Math.log(2 * Math.PI * n);
+        }
+        let result = logFactorial(n - 1) + Math.log(n);
+        logFactorialCache[n] = result;
+        return result;
+    }
+
+    function isHalfInteger(n) {
+        return Number.isFinite(n) && (2 * n) % 1 === 0;
+    }
+
+    function displayError(message) {
+        resultDiv.innerHTML = `<span class="text-red-400 font-semibold">${message}</span>`;
+        resultDiv.classList.add('items-center', 'justify-center');
+        resultDiv.classList.remove('items-start', 'flex-col');
+    }
+    
+    function findFraction(decimal, tolerance = 1.0E-9, maxDenominator = 10000) {
+        if (decimal === 0) return { n: 0, d: 1 };
+        let n = 1, d = 0, n1 = 0, d1 = 1;
+        let b = decimal;
+        do {
+            let a = Math.floor(b);
+            let aux = n; n = a * n + n1; n1 = aux;
+            aux = d; d = a * d + d1; d1 = aux;
+            b = 1 / (b - a);
+        } while (Math.abs(decimal - n / d) > decimal * tolerance && d <= maxDenominator);
+        return { n, d };
+    }
+
+    function formatCoefficient(result, isFirst) {
+        if (Math.abs(result) < 1e-9) return '';
+        
+        const sign = result < 0 ? '−' : (isFirst ? '' : '+');
+        const val_sq = result * result;
+        const { n, d } = findFraction(val_sq);
+
+        if (Math.abs(val_sq - n / d) > 1e-9) {
+            return `<span class="mx-2">${sign} ${Math.abs(result).toFixed(6)}</span>`; // Fallback to decimal
+        }
+        
+        if (Math.abs(val_sq - 1) < 1e-9) {
+             return `<span class="mx-2">${sign}</span>`;
+        }
+
+        const sqrt_n = Math.sqrt(n);
+        const sqrt_d = Math.sqrt(d);
+        
+        let num_str = Number.isInteger(sqrt_n) ? sqrt_n.toString() : `√${n}`;
+        let den_str = Number.isInteger(sqrt_d) ? sqrt_d.toString() : `√${d}`;
+        
+        if (den_str === '1') return `<span class="mx-2">${sign} ${num_str}</span>`;
+
+        return `<div class="frac-container"><span class="frac-sign">${sign}</span><span class="frac"><sup>${num_str}</sup><span>/</span><sub>${den_str}</sub></span></div>`;
+    }
+
+    function calculateCoefficient(j1, m1, j2, m2, J, M) {
+        // Racah's Formula using Log-Factorials for numerical stability
+        const log_delta_sq = Math.log(2 * J + 1)
+            + logFactorial(J + j1 - j2) + logFactorial(J - j1 + j2) + logFactorial(j1 + j2 - J)
+            - logFactorial(j1 + j2 + J + 1);
+
+        const log_sqrt_terms_sq = logFactorial(J + M) + logFactorial(J - M)
+            + logFactorial(j1 - m1) + logFactorial(j1 + m1)
+            + logFactorial(j2 - m2) + logFactorial(j2 + m2);
+
+        const k_min = Math.max(0, j2 - J - m1, j1 - J + m2);
+        const k_max = Math.min(j1 - m1, j2 + m2, j1 + j2 - J);
+        
+        let log_sum_terms = [];
+        for (let k = Math.ceil(k_min - 1e-9); k <= Math.floor(k_max + 1e-9); k++) {
+            const log_denominator = logFactorial(k) + logFactorial(j1 + j2 - J - k) + logFactorial(j1 - m1 - k)
+                + logFactorial(j2 + m2 - k) + logFactorial(J - j2 + m1 + k) + logFactorial(J - j1 - m2 + k);
+            log_sum_terms.push(-log_denominator);
+        }
+
+        if (log_sum_terms.length === 0) return 0;
+        
+        const max_log_term = Math.max(...log_sum_terms.filter(isFinite));
+        if (!isFinite(max_log_term)) return 0;
+
+        let scaled_sum = 0;
+        for (let i = 0; i < log_sum_terms.length; i++) {
+            const k = Math.ceil(k_min - 1e-9) + i;
+            const sign = (k % 2 === 0) ? 1 : -1;
+            if (isFinite(log_sum_terms[i])) {
+                scaled_sum += sign * Math.exp(log_sum_terms[i] - max_log_term);
+            }
+        }
+        
+        const sum_sign = Math.sign(scaled_sum);
+        if (sum_sign === 0) return 0;
+        
+        const log_sum_sq = 2 * (max_log_term + Math.log(Math.abs(scaled_sum)));
+        const total_log_sq = log_delta_sq + log_sqrt_terms_sq + log_sum_sq;
+
+        if (!isFinite(total_log_sq)) return 0;
+
+        const final_result_abs = Math.exp(0.5 * total_log_sq);
+        return sum_sign * final_result_abs;
+    }
+
+
+    // --- Main Calculation Logic ---
+    calculateBtn.addEventListener('click', () => {
+        // 1. Get and parse inputs
+        const j1 = parseInput(document.getElementById('j1').value);
+        const m1 = parseInput(document.getElementById('m1').value);
+        const j2 = parseInput(document.getElementById('j2').value);
+        const m2 = parseInput(document.getElementById('m2').value);
+
+        // 2. Validate initial inputs
+        const initialInputs = { j1, m1, j2, m2 };
+        for (const key in initialInputs) {
+            if (isNaN(initialInputs[key])) {
+                displayError(`Invalid input for ${key}. Please enter a number or fraction (e.g., 1/2).`);
+                return;
+            }
+        }
+        if (!Object.values(initialInputs).every(isHalfInteger)) {
+            displayError('All quantum numbers must be integers or half-integers.');
+            return;
+        }
+        if (Math.abs(m1) > j1) { displayError('Selection Rule Violated: |m₁| ≤ j₁'); return; }
+        if (Math.abs(m2) > j2) { displayError('Selection Rule Violated: |m₂| ≤ j₂'); return; }
+
+        // 3. Determine possible J and M values
+        const M = m1 + m2;
+        const J_min = Math.abs(j1 - j2);
+        const J_max = j1 + j2;
+
+        let results = [];
+
+        // Loop through all possible J values
+        for (let J = J_min; J <= J_max; J++) {
+            // Check remaining selection rules for this specific (J, M) pair
+            if ((j1 + j2 + J) % 1 !== 0) continue; // j1+j2+J must be an integer
+            if (Math.abs(M) > J) continue; // |M| <= J
+
+            const coefficient = calculateCoefficient(j1, m1, j2, m2, J, M);
+            
+            // Only add non-zero coefficients to the results
+            if (Math.abs(coefficient) > 1e-9) {
+                 results.push({ J, M, coefficient });
+            }
+        }
+
+        // 4. Display all results
+        resultDiv.innerHTML = ''; // Clear previous results
+        resultDiv.classList.remove('items-center', 'justify-center');
+        resultDiv.classList.add('items-start', 'flex-col');
+
+        if (results.length === 0) {
+            displayError('No non-zero coefficients found for the given inputs.');
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'w-full text-left font-mono text-lg md:text-xl text-gray-300 flex items-center flex-wrap';
+        
+        const initialState = document.createElement('div');
+        initialState.className = 'flex-shrink-0';
+        initialState.innerHTML = `|${j1},${m1}⟩|${j2},${m2}⟩ &nbsp;=&nbsp;`;
+        container.appendChild(initialState);
+        
+        const sumContainer = document.createElement('div');
+        sumContainer.className = 'flex items-center flex-wrap';
+
+        results.forEach((res, index) => {
+            const coeffFormatted = formatCoefficient(res.coefficient, index === 0);
+            
+            // Don't render a term if the coefficient is effectively zero
+            if (coeffFormatted === '') return;
+
+            const term = document.createElement('div');
+            term.className = 'flex items-center';
+            term.innerHTML = `${coeffFormatted} |${res.J},${res.M}; ${j1},${j2}⟩`;
+            sumContainer.appendChild(term);
+        });
+
+        container.appendChild(sumContainer);
+        resultDiv.appendChild(container);
+    });
+</script>
+
+</body>
+</html>
+
+
